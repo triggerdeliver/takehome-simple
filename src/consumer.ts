@@ -25,8 +25,11 @@ const inFlightEventIds = new Set<string>();
 const orderBuffers = new Map<string, Map<number, Event>>();
 // Per-user next expected seq
 const nextExpectedSeq = new Map<string, number>();
+// Per-user gap wait start time (when we started waiting for a missing seq)
+const gapWaitStart = new Map<string, number>();
 
 const CONCURRENCY = parseInt(process.env.CONSUMER_CONCURRENCY || '384', 10);
+const GAP_TIMEOUT_MS = 5000; // Skip missing seq after 5 seconds
 const PARTITIONS_CONCURRENCY = parseInt(process.env.CONSUMER_PARTITIONS || '8', 10);
 const MAX_PROCESSING_RETRIES = 3;
 const INFLIGHT_RETRY_ATTEMPTS = parseInt(process.env.INFLIGHT_RETRY_ATTEMPTS || '6', 10);
@@ -96,14 +99,46 @@ async function tryProcessBufferedEvents(userId: string): Promise<void> {
     nextExpectedSeq.set(userId, nextSeq);
   }
 
-  while (buffer.has(nextSeq)) {
-    const event = buffer.get(nextSeq)!;
-    buffer.delete(nextSeq);
+  while (true) {
+    if (buffer.has(nextSeq)) {
+      // Process the next expected seq
+      const event = buffer.get(nextSeq)!;
+      buffer.delete(nextSeq);
+      gapWaitStart.delete(userId); // Reset gap timer
 
-    await processEventWithRetry(event);
+      await processEventWithRetry(event);
 
-    nextSeq += 1;
-    nextExpectedSeq.set(userId, nextSeq);
+      nextSeq += 1;
+      nextExpectedSeq.set(userId, nextSeq);
+    } else if (buffer.size > 0) {
+      // We have buffered events but not the next expected seq - check gap timeout
+      const waitStart = gapWaitStart.get(userId);
+      if (!waitStart) {
+        // Start waiting for this gap
+        gapWaitStart.set(userId, Date.now());
+        break;
+      } else if (Date.now() - waitStart > GAP_TIMEOUT_MS) {
+        // Gap timeout exceeded - skip to next available seq
+        const bufferedSeqs = Array.from(buffer.keys()).sort((a, b) => a - b);
+        const nextAvailable = bufferedSeqs.find(s => s > nextSeq);
+        if (nextAvailable) {
+          console.log(`Gap timeout: skipping seq ${nextSeq} to ${nextAvailable - 1} for user ${userId}`);
+          nextSeq = nextAvailable;
+          nextExpectedSeq.set(userId, nextSeq);
+          gapWaitStart.delete(userId);
+          // Continue processing from next available
+        } else {
+          break;
+        }
+      } else {
+        // Still waiting for gap
+        break;
+      }
+    } else {
+      // No more buffered events
+      gapWaitStart.delete(userId);
+      break;
+    }
   }
 }
 

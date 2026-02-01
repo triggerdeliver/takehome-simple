@@ -44,6 +44,7 @@ takehome/
 
 ### 2) Reliability
 - Consumer can be SIGTERM-killed and restarted **once** during processing
+- Consumer must recover within **5 seconds** of restart
 - **0 lost events**
 - **0 duplicates** (no second processing, no processedAt rewrite)
 - No stale `inflight:*` keys after processing completes
@@ -57,7 +58,8 @@ takehome/
 ### 4) Ordering per userId
 - Events have `payload.seq` (1, 2, 3...)
 - For each `userId`, events must be processed in **strict order** of `seq`
-- **Do not assume arrival order**; events may arrive out of order and must be buffered
+- **Do not assume arrival order**; buffer out-of-order events
+- If a gap persists for **>5 seconds**, skip missing seq and continue
 - Store order in Redis list `order:{userId}`
 
 ### 5) Retry + DLQ

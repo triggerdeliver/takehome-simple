@@ -1,34 +1,14 @@
 # Solution
 
-## 1. Partitioning & Ordering
-
-> How do you ensure events for the same userId are processed in order when Kafka has multiple partitions?
+## 1. How did you ensure ordering while maintaining parallelism?
 
 _Your answer here..._
 
-## 2. Parallelism
-
-> How do you achieve high throughput while maintaining ordering guarantees?
+## 2. Trade-offs in your approach?
 
 _Your answer here..._
 
-## 3. Idempotency
-
-> How do you prevent duplicate processing in a distributed system with restarts?
-
-_Your answer here..._
-
-## 4. Rate Limiting
-
-> How does your sliding window algorithm work?
-
-_Your answer here..._
-
-## 5. Trade-offs
-
-> What trade-offs did you make in your implementation?
-
-_Your answer here..._
+---
 
 ## Test Results
 
