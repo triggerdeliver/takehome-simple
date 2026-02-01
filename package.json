@@ -1,0 +1,42 @@
+{
+  "name": "cdp-takehome",
+  "version": "1.0.0",
+  "description": "Backend Take-Home: Event Processing Pipeline",
+  "scripts": {
+    "build": "tsc",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:consumer\"",
+    "dev:api": "ts-node-dev --respawn src/api.ts",
+    "dev:consumer": "ts-node-dev --respawn src/consumer.ts",
+    "start:api": "node dist/api.js",
+    "start:consumer": "node -r ts-node/register src/consumer.ts",
+    "test": "npm run test:load && npm run test:reliability && npm run test:idempotency && npm run test:ordering && npm run test:dlq && npm run test:rate-limit && npm run test:validation",
+    "test:load": "ts-node tests/load.test.ts",
+    "test:reliability": "ts-node tests/reliability.test.ts",
+    "test:idempotency": "ts-node tests/idempotency.test.ts",
+    "test:ordering": "ts-node tests/ordering.test.ts",
+    "test:dlq": "ts-node tests/dlq.test.ts",
+    "test:rate-limit": "ts-node tests/rate-limit.test.ts",
+    "test:validation": "ts-node tests/validation.test.ts",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "express": "^4.18.2",
+    "ioredis": "^5.3.2",
+    "kafkajs": "^2.2.4",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.7",
+    "concurrently": "^8.2.2",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
