@@ -93,8 +93,9 @@ async function tryProcessBufferedEvents(userId: string): Promise<void> {
   const buffer = orderBuffers.get(userId);
   if (!buffer || buffer.size === 0) return;
 
-  let nextSeq: number = nextExpectedSeq.get(userId) ?? await getNextExpectedSeqFromRedis(userId);
-  if (!nextExpectedSeq.has(userId)) {
+  let nextSeq = nextExpectedSeq.get(userId);
+  if (nextSeq === undefined) {
+    nextSeq = await getNextExpectedSeqFromRedis(userId);
     nextExpectedSeq.set(userId, nextSeq);
   }
 

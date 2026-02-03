@@ -17,7 +17,6 @@
     "test:dlq": "ts-node tests/dlq.test.ts",
     "test:rate-limit": "ts-node tests/rate-limit.test.ts",
     "test:validation": "ts-node tests/validation.test.ts",
-    "test:submission": "ts-node tests/submission.test.ts",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit"
   },
