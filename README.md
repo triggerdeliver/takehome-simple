@@ -144,6 +144,32 @@ npm test
 
 ---
 
+## Scoring
+
+| Test | Points | Description |
+|------|--------|-------------|
+| Load | 20 | Process 50K events in 30s with ≥95% success |
+| Reliability | 20 | Zero lost/duplicate events after restart |
+| Idempotency | 15 | Duplicate detection, no reprocessing |
+| Ordering | 15 | Per-user strict ordering with buffering |
+| DLQ | 15 | Retry 3x then DLQ, don't block sequence |
+| Rate Limit | 10 | 100/sec per userId sliding window |
+| Validation | 5 | Input validation, 400 for invalid |
+| **Total** | **100** | |
+
+### Grades
+
+| Score | Grade | Decision |
+|-------|-------|----------|
+| 90-100 | A | Strong Hire |
+| 75-89 | B | Hire |
+| 60-74 | C | Maybe |
+| < 60 | D | No Hire |
+
+Run scoring: `npm run test:submission`
+
+---
+
 ## Constraints
 
 - **Do not modify test files**
